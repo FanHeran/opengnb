@@ -1,14 +1,18 @@
-CFLAGS=-O2 -I./src -I/usr/x86_64-w64-mingw32/include -I./libs -I./libs/wintun -I./libs/miniupnpc -I./libs/libnatpmp -I./libs/zlib -D NO_GZIP=1 -DMINIUPNP_STATICLIB -DNATPMP_STATICLIB
+# 确保你的windows已安装mingw64，安装好后/path/to/mingw64/bin目录下将mingw32-make.exe重命名为make.exe，将此目录添加至系统path，可参考有关教程
+# 编译前确保你的make和gcc命令可用
+# 以下所有C:/ProgramData/mingw64换成你自己的mingw64目录
 
-CLI_LDFLAGS=-s -static -L/usr/x86_64-w64-mingw32/lib/ -lwsock32 -lws2_32 -liphlpapi -lpthread -lmingwex
-GNB_ES_LDFLAGS=-s -static -L/usr/x86_64-w64-mingw32/lib/ -lwsock32 -lws2_32 -liphlpapi -lpthread -lmingwex
+CFLAGS=-O2 -I./src -I C:/ProgramData/mingw64/include -I./libs -I./libs/wintun -I./libs/miniupnpc -I./libs/libnatpmp -I./libs/zlib -D NO_GZIP=1 -DMINIUPNP_STATICLIB -DNATPMP_STATICLIB
+CLI_LDFLAGS=-s -static -L C:/ProgramData/mingw64/lib -lwsock32 -lws2_32 -liphlpapi -lpthread -lmingwex
+GNB_ES_LDFLAGS=-s -static -L C:/ProgramData/mingw64/lib -lwsock32 -lws2_32 -liphlpapi -lpthread -lmingwex
 
 
 GNB_CRYPTO=gnb_crypto.exe
 GNB_CTL=gnb_ctl.exe
 GNB_ES=gnb_es.exe
 GNB_CLI=gnb.exe
-
+CC=gcc
+WINDRES=windres
 
 include Makefile.inc
 
@@ -49,16 +53,15 @@ ${GNB_CLI}: ${GNB_OBJS} ${GNB_CLI_OBJS} ${GNB_PF_OBJS} ${CRYPTO_OBJS} ${ZLIB_OBJ
 	${WINDRES} ./src/mingw/gnb_res.rc -o ./src/mingw/gnb_res.o
 
 
-install:${GNB_CLI} ${GNB_CRYPTO} ${GNB_ES} ${GNB_CTL}
-	mkdir -p         ./bin/
-	cp ${GNB_CLI}    ./bin/
-	cp ${GNB_CTL}    ./bin/
-	cp ${GNB_CRYPTO} ./bin/
-	cp ${GNB_ES}     ./bin/
+install: ${GNB_CLI} ${GNB_CRYPTO} ${GNB_ES} ${GNB_CTL}
+	if not exist "./bin/" mkdir "./bin/"
+	copy ${GNB_CLI}    "./bin/"
+	copy ${GNB_CTL}    "./bin/"
+	copy ${GNB_CRYPTO} "./bin/"
+	copy ${GNB_ES}     "./bin/"
 
 clean:
-	find . -name "*.o" -exec rm -f {} \;
-	rm -f ${GNB_CLI} ${GNB_CRYPTO} ${GNB_ES} ${GNB_CTL}
-	rm -f core
-	rm -f *.exe
+	for /r . %%f in (*.o) do if exist %%f del /q "%%f"
+	del /q *.exe
+
 
